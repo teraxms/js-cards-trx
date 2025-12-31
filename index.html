@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JS Сards</title>
+    <title>JS Cards</title>
 </head>
 
 <body class="bg-zinc-800 min-h-screen p-6">
@@ -13,16 +13,15 @@
     <header class="bg-zinc-900 rounded-lg relative shadow-2xl">
         <nav class="max-w-9xl mx-auto flex items-center justify-between p-4 relative">
             <div class="flex items-center">
-                <img src="https://cdn.simpleicons.org/javascript/F7DF1E" class="h-11 w-autto rounded-lg" alt="Logo" />
+                <img src="https://cdn.simpleicons.org/javascript/F7DF1E" class="h-11 w-auto rounded-lg" alt="Logo" />
             </div>
             <div class="absolute left-1/2 transform -translate-x-1/2">
-                <p class="text-gray-100 text-lg font-bold tracking-widest uppercase">Java Script by Terax</p>
+                <p class="text-gray-100 text-lg font-bold tracking-widest uppercase">Java Script Cards by Terax</p>
             </div>
         </nav>
 
         <div class="overflow-x-auto py-4 mt-2 hide-scrollbar">
-            <div id="topicsMenu" class="flex gap-4 px-4">
-            </div>
+            <div id="topicsMenu" class="flex gap-4 px-4"></div>
         </div>
 
         <style>
@@ -47,10 +46,10 @@
         <div class="flex flex-col md:flex-row gap-4">
             <input id="titleInput" type="text" placeholder="Название метода"
                 class="flex-[1] rounded-full px-4 py-2 bg-gray-200 focus:ring-2 focus:ring-yellow-500 outline-none w-full">
-
             <input id="textInput" type="text" placeholder="Описание (Действие | Результат)"
                 class="flex-[2] rounded-full px-4 py-2 bg-gray-200 focus:ring-2 focus:ring-yellow-500 outline-none w-full">
-
+            <input id="topicInput" type="text" placeholder="Тема"
+                class="flex-[1] rounded-full px-4 py-2 bg-gray-200 focus:ring-2 focus:ring-yellow-500 outline-none w-full">
             <button id="addCardBtn"
                 class="flex-none bg-yellow-400 text-black font-bold px-8 py-2 rounded-full hover:bg-yellow-500 transition cursor-pointer whitespace-nowrap">
                 Добавить
@@ -65,280 +64,316 @@
         const btn = document.getElementById('addCardBtn');
         const titleInput = document.getElementById('titleInput');
         const textInput = document.getElementById('textInput');
-        const topicInput = document.getElementById('topicInput'); // Теперь он есть в HTML
+        const topicInput = document.getElementById('topicInput');
         const menu = document.getElementById('topicsMenu');
 
-        let currentFilter = 'All'; // Храним текущую выбранную тему
-
-        let savedCards = [
+        let currentFilter = 'All';
+        let savedCards = JSON.parse(localStorage.getItem('savedCards')) || [
             // --- VARIABLES & BASE ---
-            { title: "const", text: "Создает константу, которую нельзя переназначить через '='. Имеет блочную область видимости (живет только внутри { }). Обязательна инициализация при объявлении.", topic: "Variables", isUser: false },
-            { title: "let", text: "Объявляет переменную с блочной областью видимости. В отличие от const, её значение можно менять сколько угодно раз в процессе работы программы.", topic: "Variables", isUser: false },
-            { title: "var", text: "Старый стандарт. Имеет функциональную область видимости. Главная особенность — 'всплытие' (hoisting): переменную можно использовать до того, как она объявлена в коде.", topic: "Variables", isUser: false },
-            { title: "typeof", text: "Оператор-определитель. Возвращает строку с названием типа данных (например: 'string', 'number', 'boolean', 'object', 'undefined', 'function').", topic: "Variables", isUser: false },
-            { title: "isNaN", text: "Проверяет, является ли значение 'не числом' (NaN). Полезно при получении данных от пользователя, чтобы понять, можно ли с ними проводить математику.", topic: "Variables", isUser: false },
+            { title: "const", text: "переменная, которую нельзя переназначить значение нельзя заменить, но объект/массив можно менять внутри", topic: "Variables", isUser: false },
+            { title: "let", text: "это обычная переменная, значение можно менять.", topic: "Variables", isUser: false },
+            { title: "var", text: "старый способ объявления переменных , не имеет блочной области видимости.", topic: "Variables", isUser: false },
+            { title: "typeof", text: "Оператор, который возвращает тип данных(например: 'string', 'number', 'boolean', 'object', 'undefined', 'function').", topic: "Variables", isUser: false },
+            { title: "isNaN", text: "проверяет, является ли значение NaN (не число).", topic: "Variables", isUser: false },
 
             // --- LOOPS (ЦИКЛЫ) ---
-            { 
-                title: "while", 
-                text: "Цикл с предусловием. Работает по логике: 'Сначала проверь — потом сделай'. Если условие ложно с самого начала, тело цикла не выполнится ни разу.", 
-                topic: "Loops", isUser: false 
+            {
+                title: "while",
+                text: "Это цикл, который выполняет код, пока условие истинно (true), если условие всегда true — цикл будет бесконечным.",
+                topic: "Loops", isUser: false
             },
-            { 
-                title: "do...while", 
-                text: "Цикл с постусловием. Работает по логике: 'Сначала сделай один раз — потом проверь'. Гарантирует хотя бы одно выполнение кода, даже если условие ложно.", 
-                topic: "Loops", isUser: false 
+            {
+                title: "do...while",
+                text: "do...while — это цикл, в котором тело выполняется минимум один раз, потому что проверка условия происходит после выполнения.",
+                topic: "Loops", isUser: false
             },
-            { 
-                title: "for (classic)", 
-                text: "Цикл-счетчик. Структура: (начало; условие; шаг). Идеален, когда ты точно знаешь, сколько раз нужно повторить действие (например, пройти от 0 до 10).", 
-                topic: "Loops", isUser: false 
+            {
+                title: "for",
+                text: "Используют, когда известно количество повторений и нужен счётчик.",
+                topic: "Loops", isUser: false
             },
-            { 
-                title: "for...of", 
-                text: "Перебор ЗНАЧЕНИЙ. Создан для массивов и строк. Позволяет достать каждый элемент напрямую. Не работает с обычными объектами.", 
-                topic: "Loops", isUser: false 
+            {
+                title: "for...of",
+                text: "Перебор ЗНАЧЕНИЙ. Создан для массивов и строк. Позволяет достать каждый элемент напрямую. Не работает с обычными объектами.",
+                topic: "Loops", isUser: false
             },
-            { 
-                title: "for...in", 
-                text: "Перебор КЛЮЧЕЙ. Предназначен для объектов. Проходит по всем именам свойств объекта. В массивах использовать не рекомендуется (может тормозить и цеплять лишнее).", 
-                topic: "Loops", isUser: false 
+            {
+                title: "for...in",
+                text: "Перебор КЛЮЧЕЙ. Предназначен для объектов. Проходит по всем именам свойств объекта. В массивах использовать не рекомендуется (может тормозить и цеплять лишнее).",
+                topic: "Loops", isUser: false
             },
 
             // --- CONDITIONALS (УСЛОВИЯ) ---
-            { 
-                title: "if / else", 
-                text: "Базовое ветвление. 'if' проверяет истинность выражения. 'else' — запасной путь. Можно строить цепочки 'else if' для проверки нескольких условий подряд.", 
-                topic: "Conditionals", isUser: false 
+            {
+                title: "if / else",
+                text: "Базовое ветвление. 'if' проверяет истинность выражения. 'else' — запасной путь. Можно строить цепочки 'else if' для проверки нескольких условий подряд.",
+                topic: "Conditionals", isUser: false
             },
-            { 
-                title: "Ternary Operator (?:)", 
-                text: "Сокращенное 'if'. Записывается в одну строку: (условие ? если_true : если_false). Удобно для быстрой записи простого выбора в одну переменную.", 
-                topic: "Conditionals", isUser: false 
+            {
+                title: "Ternary Operator (?:)",
+                text: "for...in — перебирает ключи (свойства) объектаТернарный оператор ?: — это короткая запись if / else, которая возвращает значение.",
+                topic: "Conditionals", isUser: false
             },
-            { 
-                title: "switch / case", 
-                text: "Строгое сравнение (===). Сравнивает значение с метками case. Обязателен 'break', иначе выполнится весь код ниже. Есть 'default' — сработает, если совпадений нет.", 
-                topic: "Conditionals", isUser: false 
+            {
+                title: "switch / case",
+                text: "switch / case — это альтернатива if / else, когда нужно проверить одно значение на несколько вариантов.",
+                topic: "Conditionals", isUser: false
             },
             // --- FUNCTIONS & CONTEXT (ПОЛНЫЙ СПИСОК) ---
-            { 
-                title: "Function Declaration", 
-                text: "Классическое объявление: function name(){}. Ключевая фишка — Hoisting (всплытие): функцию можно вызвать в коде ВЫШЕ того места, где она создана.", 
-                topic: "Functions", isUser: false 
+            {
+                title: "Function Declaration",
+                text: "Можно вызывать до объявления , создаётся как имя функции в области видимости.",
+                topic: "Functions", isUser: false
             },
-            { 
-                title: "Function Expression", 
-                text: "Функция, сохраненная в переменную: const f = function(){}. Не всплывает — вызвать можно только ПОСЛЕ строки объявления. Часто используется для анонимных функций.", 
-                topic: "Functions", isUser: false 
+            {
+                title: "Function Expression",
+                text: "Создаётся только при выполнении кода, можно присвоить переменной, но вызвать до объявления нельзя.",
+                topic: "Functions", isUser: false
             },
-            { 
-                title: "this", 
-                text: "Контекст. В методе объекта указывает на сам ОБЪЕКТ. В обычной функции — на window (или undefined в strict mode). В обработчике события — на элемент, по которому кликнули.", 
-                topic: "Functions", isUser: false 
+            {
+                title: "this",
+                text: "Контекст. В методе объекта указывает на сам ОБЪЕКТ. В обычной функции — на window (или undefined в strict mode). В обработчике события — на элемент, по которому кликнули.",
+                topic: "Functions", isUser: false
             },
-            { 
-                title: "call()", 
-                text: "Мгновенный вызов с подменой this. Принимает: (новыйContext, арг1, арг2...). Позволяет одной функции временно поработать с данными другого объекта.", 
-                topic: "Functions", isUser: false 
+            {
+                title: "call()",
+                text: "Вызывает функцию сразу, передавая this и аргументы через запятую ,Что делает: вызывает функцию с явным this и передаёт аргументы массивом.Когда используется: когда есть список аргументов в массиве и нужно вызвать функцию с конкретным контекстом.",
+                topic: "Functions", isUser: false
             },
-            { 
-                title: "apply()", 
-                text: "Мгновенный вызов с подменой this. Принимает: (новыйContext, [массивАргументов]). Идентичен call, но удобен, когда аргументы уже лежат в массиве.", 
-                topic: "Functions", isUser: false 
+            {
+                title: "apply()",
+                text: "Мгновенный вызов с подменой this. Принимает: (новыйContext, [массивАргументов]). Идентичен call, но удобен, когда аргументы уже лежат в массиве.",
+                topic: "Functions", isUser: false
             },
-            { 
-                title: "bind()", 
-                text: "Привязка 'навсегда'. НЕ вызывает функцию, а возвращает её КОПИЮ с жестко закрепленным this. Идеально для методов, которые передаются в setTimeout или клики.", 
-                topic: "Functions", isUser: false 
+            {
+                title: "bind()",
+                text: "Что делает: возвращает новую функцию, у которой закреплён конкретный this (контекст), но не вызывает её сразу. Когда используется: когда нужно вызвать функцию позже, но с заранее закреплённым this.",
+                topic: "Functions", isUser: false
             },
-            { 
-                title: "Arrow Functions (=>)", 
-                text: "Стрелочные функции. У них НЕТ своего this — они берут его из внешнего окружения. Их нельзя использовать как конструкторы или вызывать через call/apply/bind.", 
-                topic: "Functions", isUser: false 
+            {
+                title: "Arrow Functions (=>)",
+                text: "(=>) — короткая запись функции, которая берёт this из внешнего контекста, не имеет arguments и обычно используется для коротких колбеков..",
+                topic: "Functions", isUser: false
             },
             // --- ARRAYS: CRUD & BASIC ---
             { title: "at", text: "Возвращает элемент по индексу. Главный плюс: если передать -1, он вернет последний элемент массива, -2 — предпоследний и так далее.", topic: "Arrays", isUser: false },
-            { title: "push / pop", text: "Работа с хвостом. push — добавляет элементы в самый конец. pop — удаляет последний элемент и возвращает его значение.", topic: "Arrays", isUser: false },
-            { title: "shift / unshift", text: "Работа с головой. shift — удаляет первый элемент (все остальные сдвигаются). unshift — вставляет элементы в начало массива.", topic: "Arrays", isUser: false },
+            { title: "push", text: "добавляет один или несколько элементов в конец массива и возвращает новую длину массива.", topic: "Arrays", isUser: false },
+            { title: "pop", text: "удаляет последний элемент массива и возвращает его..", topic: "Arrays", isUser: false },
+            { title: "shift", text: "удаляет первый элемент массива и возвращает его..", topic: "Arrays", isUser: false },
+            { title: "unshift", text: "добавляет один или несколько элементов в начало массива и возвращает новую длину массива...", topic: "Arrays", isUser: false },
             { title: "concat", text: "Берет два или больше массивов и 'склеивает' их в один новый массив. Исходные массивы при этом не меняются.", topic: "Arrays", isUser: false },
             { title: "join", text: "Превращает массив в строку. В скобках можно указать разделитель (например, запятую или тире), который будет стоять между элементами.", topic: "Arrays", isUser: false },
-            { title: "slice", text: "Копирует часть массива. Принимает (откуда начать, до куда копировать). Оригинальный массив остается нетронутым.", topic: "Arrays", isUser: false },
-            { title: "splice", text: "Швейцарский нож. Может удалять, вставлять и заменять элементы одновременно. ВНИМАНИЕ: изменяет оригинальный массив!", topic: "Arrays", isUser: false },
+            { title: "slice", text: "slice(start, end) копирует часть массива от индекса start до end (не включая end) и не изменяет исходный массив.", topic: "Arrays", isUser: false },
+            { title: "splice", text: "splice(start, deleteCount, ...items) удаляет элементы, начиная с start, и может добавить новые элементы на их место.", topic: "Arrays", isUser: false },
 
             // --- ARRAYS: SEARCH & LOGIC ---
-            { title: "find / findIndex", text: "find — возвращает первый элемент, который подошел под условие. findIndex — делает то же самое, но возвращает не сам элемент, а его индекс (номер).", topic: "Arrays", isUser: false },
-            { title: "includes", text: "Простой поиск. Возвращает true, если в массиве есть такое значение, и false, если его нет. Работает как детектор.", topic: "Arrays", isUser: false },
-            { title: "indexOf / lastIndexOf", text: "indexOf ищет индекс первого вхождения элемента слева направо. lastIndexOf — то же самое, но начинает поиск с конца массива.", topic: "Arrays", isUser: false },
-            { title: "every / some", text: "every вернет true только если ВСЕ элементы подошли под условие. some вернет true, если хотя бы ОДИН элемент подошел.", topic: "Arrays", isUser: false },
+            { title: "findIndex", text: "ищет первый элемент, который удовлетворяет условию и возвращает его индекс, или -1, если не найден..", topic: "Arrays", isUser: false },
+            { title: "find", text: "ищет первый элемент, который удовлетворяет условию в функции, и возвращает сам элемент, eсли не найден — возвращает undefined.", topic: "Arrays", isUser: false },
+            { title: "includes", text: "проверяет, есть ли элемент в массиве, и возвращает true или false.", topic: "Arrays", isUser: false },
+            { title: "indexOf", text: "ищет элемент в массиве и возвращает индекс первого вхождения, если есть, или -1, если элемента нет.", topic: "Arrays", isUser: false },
+            { title: "lastIndexOf", text: "indexOf ищет индекс первого вхождения элемента слева направо. lastIndexOf — то же самое, но начинает поиск с конца массива.", topic: "Arrays", isUser: false },
+            { title: "some", text: "вернет true, если хотя бы ОДИН элемент подошел.", topic: "Arrays", isUser: false },
+            { title: "every", text: "every вернет true только если ВСЕ элементы подошли под условие.", topic: "Arrays", isUser: false },
             { title: "isArray", text: "Метод самого класса Array. Единственный надежный способ проверить, является ли переменная массивом (typeof выдает просто 'object').", topic: "Arrays", isUser: false },
+            { title: "forEach", text: "выполняет переданную функцию для каждого элемента массива, не возвращает значения.", topic: "Arrays", isUser: false },
 
             // --- ARRAYS: TRANSFORMATION ---
             { title: "map", text: "Создает НОВЫЙ массив, пропустив каждый элемент старого массива через функцию. Оригинал не меняется. Идеально для трансформации данных.", topic: "Arrays", isUser: false },
             { title: "filter", text: "Создает новый массив, в который попадут только те элементы, которые прошли проверку (вернули true в функции-условии).", topic: "Arrays", isUser: false },
             { title: "reduce", text: "Самый мощный метод. Пробегает по массиву и собирает все данные в одну переменную (аккумулятор). Можно посчитать сумму, собрать объект или строку.", topic: "Arrays", isUser: false },
-            { title: "flat / flatMap", text: "flat разворачивает вложенные массивы [[1]] -> [1]. flatMap сначала делает map, а потом делает flat. Удобно для работы с глубокими данными.", topic: "Arrays", isUser: false },
-            { title: "with", text: "Новый метод. Возвращает копию массива, где элемент на конкретном индексе заменен на новый. Не портит оригинал.", topic: "Arrays", isUser: false },
+            { title: "flatMap", text: "сначала применяет map() к каждому элементу массива, а затем разворачивает результат на один уровень (то есть делает flat(1)).", topic: "Arrays", isUser: false },
+            { title: "flat", text: "разворачивает вложенные массивы на один уровень (по умолчанию) или на заданную глубину.", topic: "Arrays", isUser: false },
+            { title: "with", text: "Возвращает копию массива, где элемент на конкретном индексе заменен на новый. Не портит оригинал.", topic: "Arrays", isUser: false },
 
             // --- STRING: CLEANING & SPACES ---
-            { 
-                title: "trim()", 
-                text: "Удаляет все пробелы, табуляцию и переносы строк с ОБЕИХ сторон текста. Полезно при обработке данных из полей ввода (input).", 
-                topic: "String", isUser: false 
+            {
+                title: "trim()",
+                text: "удаляет пробелы и другие пробельные символы с начала и конца строки.",
+                topic: "String", isUser: false
             },
-            { 
-                title: "trimStart() / trimEnd()", 
-                text: "Точечная очистка. trimStart убирает пробелы только слева (в начале), trimEnd — только справа (в конце).", 
-                topic: "String", isUser: false 
+            {
+                title: "trimEnd()",
+                text: "удаляет пробелы и другие пробельные символы только с конца строки.",
+                topic: "String", isUser: false
+            },
+            {
+                title: "trimStart()",
+                text: "удаляет пробелы и другие пробельные символы только с конца строки.",
+                topic: "String", isUser: false
             },
 
             // --- STRING: SEARCH & CHECK ---
-            { 
-                title: "includes()", 
-                text: "Проверка на вхождение. Возвращает true, если подстрока есть внутри текста. Регистр важен (А !== а).", 
-                topic: "String", isUser: false 
+            {
+                title: "includes()",
+                text: "проверяет, содержится ли указанный элемент в массиве или строке, и возвращает true или false.",
+                topic: "String", isUser: false
             },
-            { 
-                title: "startsWith() / endsWith()", 
-                text: "Детекторы границ. startsWith проверяет начало строки, endsWith — конец. Удобно для проверки расширений файлов или протоколов (http/https).", 
-                topic: "String", isUser: false 
+            {
+                title: "startsWith()",
+                text: "проверяет, начинается ли строка с указанного значения, и возвращает true или false.",
+                topic: "String", isUser: false
             },
-            { 
-                title: "indexOf() / lastIndexOf()", 
-                text: "Поиск позиции. indexOf возвращает номер первого символа подстроки. Если ничего не найдено, возвращает -1. lastIndexOf ищет с конца.", 
-                topic: "String", isUser: false 
+            {
+                title: "endsWith()",
+                text: "проверяет, заканчивается ли строка указанным значением, и возвращает true или false.",
+                topic: "String", isUser: false
+            },
+            {
+                title: "indexOf()",
+                text: "ищет первое вхождение элемента или подстроки и возвращает его индекс, или -1, если не найден.",
+                topic: "String", isUser: false
+            },
+            {
+                title: "lastIndexOf()",
+                text: "ищет последнее вхождение элемента или подстроки и возвращает его индекс, или -1, если не найден.",
+                topic: "String", isUser: false
             },
 
             // --- STRING: MODIFICATION ---
-            { 
-                title: "padStart() / padEnd()", 
-                text: "Заполнение пустоты. Принимает: (нужная_длина, символ). Если строка короче, добавит символы в начало или конец. Пример: '5'.padStart(2, '0') станет '05'.", 
-                topic: "String", isUser: false 
+            {
+                title: "padEnd()",
+                text: "добавляет заполнители в конец строки, чтобы её длина достигла указанного значения.",
+                topic: "String", isUser: false
             },
-            { 
-                title: "replaceAll()", 
-                text: "Массовая замена. Находит ВСЕ совпадения в строке и меняет их на новый текст. В отличие от старого replace(), не требует использования регулярных выражений для замены всех вхождений.", 
-                topic: "String", isUser: false 
+            {
+                title: "padStart()",
+                text: "добавляет заполнители в начало строки, чтобы её длина достигла указанного значения.",
+                topic: "String", isUser: false
             },
-            { 
-                title: "slice()", 
-                text: "Вырезание куска. Принимает: (старт, конец). Копирует часть строки от индекса до индекса. Если передать отрицательное число, начнет отсчет с конца.", 
-                topic: "String", isUser: false 
+            {
+                title: "replaceAll()",
+                text: "Массовая замена. Находит ВСЕ совпадения в строке и меняет их на новый текст.",
+                topic: "String", isUser: false
             },
-            { 
-                title: "split()", 
-                text: "Разбиение. Превращает строку в МАССИВ. Принимает разделитель (например, пробел или запятую). Идеально для превращения предложения в список слов.", 
-                topic: "String", isUser: false 
+            {
+                title: "slice()",
+                text: "Вырезание куска. Принимает: (старт, конец). Копирует часть строки от индекса до индекса. Если передать отрицательное число, начнет отсчет с конца.",
+                topic: "String", isUser: false
             },
-            { 
-                title: "toLowerCase() / toUpperCase()", 
-                text: "Смена регистра. Делает весь текст либо строчным (маленьким), либо заглавным (большим).", 
-                topic: "String", isUser: false 
+            {
+                title: "split()",
+                text: "разбивает строку на массив подстрок по указанному разделителю.",
+                topic: "String", isUser: false
+            },
+            {
+                title: "toLowerCase()",
+                text: "возвращает новую строку, где все буквы преобразованы в строчные (маленькие).",
+                topic: "String", isUser: false
+            },
+            {
+                title: "toUpperCase()",
+                text: "возвращает новую строку, где все буквы преобразованы в заглавные (большие).",
+                topic: "String", isUser: false
             },
             // --- MATH (КАЖДЫЙ МЕТОД ОТДЕЛЬНО) ---
-            { 
-                title: "Math.ceil()", 
-                text: "Округление вверх. Всегда тянет число к ближайшему БОЛЬШЕМУ целому. Пример: 1.1 станет 2.", 
-                topic: "Math", isUser: false 
+            {
+                title: "Math.ceil()",
+                text: "возвращает наименьшее целое число, которое не меньше переданного числа (округление вверх).",
+                topic: "Math", isUser: false
             },
-            { 
-                title: "Math.floor()", 
-                text: "Округление вниз. Просто отсекает дробную часть, притягивая к МЕНЬШЕМУ целому. Пример: 1.9 станет 1.", 
-                topic: "Math", isUser: false 
+            {
+                title: "Math.floor()",
+                text: "возвращает наибольшее целое число, которое не больше переданного числа (округление вниз).",
+                topic: "Math", isUser: false
             },
-            { 
-                title: "Math.round()", 
-                text: "Математическое округление. До .5 тянет вниз, от .5 и выше — вверх. Пример: 1.5 станет 2, а 1.49 станет 1.", 
-                topic: "Math", isUser: false 
+            {
+                title: "Math.round()",
+                text: "округляет число до ближайшего целого.",
+                topic: "Math", isUser: false
             },
-            { 
-                title: "Math.random()", 
-                text: "Генератор случая. Возвращает дробное число от 0 (включительно) до 1 (не включая). Для целых чисел используют формулу с Math.floor.", 
-                topic: "Math", isUser: false 
+            {
+                title: "Math.random()",
+                text: "возвращает случайное число с плавающей запятой в диапазоне от 0 (включительно) до 1 (не включая 1).",
+                topic: "Math", isUser: false
             },
-            { 
-                title: "Math.max() / Math.min()", 
-                text: "Поиск экстремумов. Принимают список чисел через запятую. max возвращает самое большое, min — самое маленькое.", 
-                topic: "Math", isUser: false 
+            {
+                title: "Math.max()",
+                text: "возвращает наибольшее число из переданных аргументов.",
+                topic: "Math", isUser: false
             },
-            { 
-                title: "Math.pow()", 
-                text: "Возведение в степень. Принимает: (число, степень). Пример: Math.pow(2, 3) вернет 8. Альтернатива — оператор **.", 
-                topic: "Math", isUser: false 
+            {
+                title: "Math.min()",
+                text: "возвращает наименьшее число из переданных аргументов.",
+                topic: "Math", isUser: false
             },
-            { 
-                title: "Math.PI", 
-                text: "Математическая константа. Возвращает число Пи (~3.14159...). Используется для вычисления площади круга или длины окружности.", 
-                topic: "Math", isUser: false 
+            {
+                title: "Math.pow()",
+                text: "Возведение в степень. Принимает: (число, степень). Пример: Math.pow(2, 3) вернет 8. Альтернатива — оператор **.",
+                topic: "Math", isUser: false
+            },
+            {
+                title: "Math.PI",
+                text: "Математическая константа. Возвращает число Пи (~3.14159...). Используется для вычисления площади круга или длины окружности.",
+                topic: "Math", isUser: false
             },
 
             // --- NUMBER (МЕТОДЫ ЧИСЕЛ) ---
-            { 
-                title: "toFixed()", 
-                text: "Ограничение знаков. Принимает кол-во цифр после запятой. ВНИМАНИЕ: округляет результат и превращает число в СТРОКУ.", 
-                topic: "Number", isUser: false 
+            {
+                title: "toFixed()",
+                text: "возвращает строку, представляющую число с указанным количеством знаков после запятой, округляя при необходимости.",
+                topic: "Number", isUser: false
             },
-            { 
-                title: "parseInt()", 
-                text: "Извлечение целого числа. Идет по строке слева направо, пока не встретит не-цифру. Пример: '100px' -> 100.", 
-                topic: "Number", isUser: false 
+            {
+                title: "parseInt()",
+                text: "берёт строку и превращает её в целое число.",
+                topic: "Number", isUser: false
             },
-            { 
-                title: "parseFloat()", 
-                text: "Извлечение дробного числа. Понимает одну точку в строке. Пример: '12.5rem' -> 12.5.", 
-                topic: "Number", isUser: false 
+            {
+                title: "parseFloat()",
+                text: "берёт строку и превращает её в число с плавающей запятой (десятичное число).",
+                topic: "Number", isUser: false
             },
-            { 
-                title: "Number.isNaN()", 
-                text: "Проверка на ошибку. Возвращает true, только если значение равно NaN. Самый надежный способ проверить результат неудачной математики.", 
-                topic: "Number", isUser: false 
+            {
+                title: "Number.isNaN()",
+                text: "проверяет, является ли значение именно NaN (не число) и возвращает true или false.",
+                topic: "Number", isUser: false
             },
-            { 
-                title: "toString()", 
-                text: "Число в строку. Можно передать основание системы счисления (например, 2 для двоичной или 16 для hex).", 
-                topic: "Number", isUser: false 
+            {
+                title: "toString()",
+                text: "Число в строку, преобразует значение в строку (текст)..",
+                topic: "Number", isUser: false
             },
-            { 
-                title: "toLocaleString()", 
-                text: "Красивый формат. Разделяет большие числа пробелами или запятыми по стандартам страны (например, 1 000 000). Можно добавить валюту.", 
-                topic: "Number", isUser: false 
+            {
+                title: "toLocaleString()",
+                text: "превращает число или дату в строку, автоматически подстраивая их под формат конкретной страны (валюта, разделители, время).",
+                topic: "Number", isUser: false
             },
             // --- STORAGE (ПОЛНЫЙ СПИСОК) ---
-            { 
-                title: "localStorage.setItem()", 
-                text: "Запись данных. Принимает: (ключ, значение). ВАЖНО: сохраняет всё как СТРОКУ. Если нужно сохранить объект, сначала используй JSON.stringify().", 
-                topic: "Storage", 
-                isUser: false 
+            {
+                title: "localStorage.setItem()",
+                text: "сохраняет данные в браузере в виде пары «ключ-значение», которые остаются там даже после закрытия страницы.",
+                topic: "Storage",
+                isUser: false
             },
-            { 
-                title: "localStorage.getItem()", 
-                text: "Чтение данных. Принимает: (ключ). Возвращает: значение в виде строки. Если ключа не существует, вернет null.", 
-                topic: "Storage", 
-                isUser: false 
+            {
+                title: "localStorage.getItem()",
+                text: "Достает сохраненные ранее данные; если по такому имени ничего нет, вернет null.",
+                topic: "Storage",
+                isUser: false
             },
-            { 
-                title: "localStorage.removeItem()", 
-                text: "Удаление конкретной записи. Принимает: (ключ). Стирает из памяти только те данные, которые привязаны к этому имени.", 
-                topic: "Storage", 
-                isUser: false 
+            {
+                title: "localStorage.removeItem()",
+                text: "безвозвратно удаляет конкретную запись из памяти браузера по её имени (ключу).",
+                topic: "Storage",
+                isUser: false
             },
-            { 
-                title: "localStorage.clear()", 
-                text: "Тотальная очистка. Не принимает аргументов. Удаляет абсолютно ВСЕ данные текущего сайта из хранилища браузера.", 
-                topic: "Storage", 
-                isUser: false 
+            {
+                title: "localStorage.clear()",
+                text: "Тотальная очистка. Не принимает аргументов. Удаляет абсолютно ВСЕ данные текущего сайта из хранилища браузера.",
+                topic: "Storage",
+                isUser: false
             },
-            { 
-                title: "localStorage.length", 
-                text: "Свойство-счетчик. Возвращает целое число — количество всех пар 'ключ-значение', которые сейчас хранятся в памяти для твоего сайта.", 
-                topic: "Storage", 
-                isUser: false 
+            {
+                title: "localStorage.length",
+                text: "Свойство-счетчик. Возвращает целое число — количество всех пар 'ключ-значение', которые сейчас хранятся в памяти для твоего сайта.",
+                topic: "Storage",
+                isUser: false
             },
-            { 
-                title: "localStorage.key()", 
-                text: "Доступ по номеру. Принимает: (индекс). Возвращает: название ключа, который стоит на этом месте. Удобно для перебора хранилища циклом for.", 
-                topic: "Storage", 
-                isUser: false 
+            {
+                title: "localStorage.key()",
+                text: "находит и возвращает название (имя) ключа, который лежит в памяти под определенным номером (индексом).",
+                topic: "Storage",
+                isUser: false
             },
             // --- OOP & ADVANCED ---
             { title: "Наследование (extends)", text: "Позволяет одному классу забрать все методы и свойства другого (родительского) класса, чтобы не писать код дважды.", topic: "OOP", isUser: false },
@@ -347,7 +382,12 @@
             { title: "Абстракция", text: "Упрощение. Мы выделяем только важные свойства объекта для нашей задачи, отсекая лишние детали реализации.", topic: "OOP", isUser: false },
             { title: "Замыкание", text: "Ситуация, когда функция 'помнит' переменные из того места, где она была создана, даже если та область видимости уже закрылась.", topic: "Advanced", isUser: false },
             { title: "Rest & Spread (...)", text: "Spread разворачивает массив в список элементов. Rest наоборот — собирает отдельные элементы в один массив.", topic: "Advanced", isUser: false }
-        ];
+        ];;
+
+        // Инициализация поля isLearned
+        savedCards.forEach(c => { if (c.isLearned === undefined) c.isLearned = false; });
+
+        function saveCards() { localStorage.setItem('savedCards', JSON.stringify(savedCards)); }
 
         function addCardToDOM(card, index) {
             const cardDiv = document.createElement('div');
@@ -355,25 +395,25 @@
             cardDiv.innerHTML = `
                 <span class="text-yellow-500 text-[10px] font-bold uppercase tracking-widest mb-2 block">${card.topic}</span>
                 <h5 class="text-white text-xl font-semibold mb-3">${card.title}</h5>
-                <p class="text-gray-400 text-sm leading-relaxed">${card.text}</p>
+                <p class="text-gray-400 text-sm leading-relaxed mb-4">${card.text}</p>
             `;
 
-            if (card.isUser) {
-                const deleteBtn = document.createElement('button');
-                deleteBtn.innerHTML = '&times;';
-                deleteBtn.className = "absolute top-4 right-4 text-red-400 text-2xl hover:scale-125 transition cursor-pointer";
-                deleteBtn.addEventListener('click', () => {
-                    savedCards.splice(index, 1);
-                    renderAll();
-                });
-                cardDiv.appendChild(deleteBtn);
-            }
+            // Кнопка "Выучил"
+            const learnBtn = document.createElement('button');
+            learnBtn.innerHTML = card.isLearned ? '✓' : '✘ ';
+            learnBtn.className = "absolute top-3 right-3 text-gray-500 font-bold hover:scale-110 transition cursor-pointer border rounded-lg p-1";
+            learnBtn.addEventListener('click', () => {
+                card.isLearned = !card.isLearned;
+                learnBtn.innerHTML = card.isLearned ? '✓ ' : '✘ ';
+                saveCards();
+            });
+            cardDiv.appendChild(learnBtn);
+
             container.appendChild(cardDiv);
         }
 
         function renderTopics() {
             menu.innerHTML = '';
-
             const allBtn = document.createElement('button');
             allBtn.innerText = "All Topics";
             allBtn.className = `px-5 py-2 rounded-full text-xs font-bold transition flex-shrink-0 cursor-pointer ${currentFilter === 'All' ? 'active-topic' : 'bg-zinc-700 text-white hover:bg-zinc-600'}`;
@@ -385,48 +425,31 @@
                 const btn = document.createElement('button');
                 btn.innerText = topic;
                 btn.className = `px-5 py-2 rounded-full text-xs font-bold transition flex-shrink-0 cursor-pointer ${currentFilter === topic ? 'active-topic' : 'bg-zinc-700 text-white hover:bg-zinc-600'}`;
-                btn.onclick = () => {
-                    currentFilter = topic;
-                    renderAll();
-                };
+                btn.onclick = () => { currentFilter = topic; renderAll(); };
                 menu.appendChild(btn);
             });
         }
 
         function renderCards() {
             container.innerHTML = '';
-            const filtered = currentFilter === 'All'
-                ? savedCards
-                : savedCards.filter(c => c.topic === currentFilter);
-
+            const filtered = currentFilter === 'All' ? savedCards : savedCards.filter(c => c.topic === currentFilter);
             filtered.forEach((c) => addCardToDOM(c, savedCards.indexOf(c)));
         }
 
-        function renderAll() {
-            renderTopics();
-            renderCards();
-        }
+        function renderAll() { renderTopics(); renderCards(); }
 
         btn.addEventListener('click', () => {
             const title = titleInput.value.trim();
             const text = textInput.value.trim();
             const topic = topicInput.value.trim();
+            if (!title || !text || !topic) { alert("Заполни все поля!"); return; }
 
-            if (!title || !text || !topic) {
-                alert("Заполни все поля (Тема, Название, Описание)!");
-                return;
-            }
-
-            const cardData = { title, text, topic, isUser: true };
-            savedCards.push(cardData);
-
+            savedCards.push({ title, text, topic, isUser: true, isLearned: false });
+            saveCards();
             currentFilter = topic;
-
             renderAll();
 
-            titleInput.value = '';
-            textInput.value = '';
-            topicInput.value = '';
+            titleInput.value = ''; textInput.value = ''; topicInput.value = '';
         });
 
         renderAll();
