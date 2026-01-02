@@ -15,8 +15,25 @@
             <div class="flex items-center">
                 <img src="https://cdn.simpleicons.org/javascript/F7DF1E" class="h-11 w-auto rounded-lg" alt="Logo" />
             </div>
-            <div class="absolute left-1/2 transform -translate-x-1/2">
-                <p class="text-gray-100 text-lg font-bold tracking-widest uppercase">Java Script Cards by Terax</p>
+
+            <div class="absolute left-1/2 transform -translate-x-1/2 hidden sm:block">
+                <p class="text-gray-100 text-lg font-bold tracking-widest uppercase text-center leading-tight">
+                    Java Script Cards <span class="text-yellow-400">by Terax</span>
+                </p>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <div class="relative group">
+                    <input id="searchInput" type="text" placeholder=""
+                        class="bg-zinc-800 text-sm text-white pl-10 pr-4 py-2 rounded-full border border-zinc-700 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 transition-all w-32 md:w-32 focus:w-35">
+                    <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                </div>
             </div>
         </nav>
 
@@ -42,418 +59,217 @@
         </style>
     </header>
 
-    <div class="mb-6 mt-6 bg-zinc-900/50 p-4 rounded-xl border border-zinc-700">
-        <div class="flex flex-col md:flex-row gap-4">
-            <input id="titleInput" type="text" placeholder="Название метода"
-                class="flex-[1] rounded-full px-4 py-2 bg-gray-200 focus:ring-2 focus:ring-yellow-500 outline-none w-full">
-            <input id="textInput" type="text" placeholder="Описание (Действие | Результат)"
-                class="flex-[2] rounded-full px-4 py-2 bg-gray-200 focus:ring-2 focus:ring-yellow-500 outline-none w-full">
-            <input id="topicInput" type="text" placeholder="Тема"
-                class="flex-[1] rounded-full px-4 py-2 bg-gray-200 focus:ring-2 focus:ring-yellow-500 outline-none w-full">
-            <button id="addCardBtn"
-                class="flex-none bg-yellow-400 text-black font-bold px-8 py-2 rounded-full hover:bg-yellow-500 transition cursor-pointer whitespace-nowrap">
-                Добавить
-            </button>
-        </div>
-    </div>
-
     <div id="cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6"></div>
 
     <script>
         const container = document.getElementById('cards');
-        const btn = document.getElementById('addCardBtn');
-        const titleInput = document.getElementById('titleInput');
-        const textInput = document.getElementById('textInput');
-        const topicInput = document.getElementById('topicInput');
         const menu = document.getElementById('topicsMenu');
+        const searchInput = document.getElementById('searchInput');
 
         let currentFilter = 'All';
-        let savedCards = JSON.parse(localStorage.getItem('savedCards')) || [
+
+        const initialCards = [
             // --- VARIABLES & BASE ---
-            { title: "const", text: "переменная, которую нельзя переназначить значение нельзя заменить, но объект/массив можно менять внутри", topic: "Variables", isUser: false },
-            { title: "let", text: "это обычная переменная, значение можно менять.", topic: "Variables", isUser: false },
-            { title: "var", text: "старый способ объявления переменных , не имеет блочной области видимости.", topic: "Variables", isUser: false },
-            { title: "typeof", text: "Оператор, который возвращает тип данных(например: 'string', 'number', 'boolean', 'object', 'undefined', 'function').", topic: "Variables", isUser: false },
-            { title: "isNaN", text: "проверяет, является ли значение NaN (не число).", topic: "Variables", isUser: false },
+            { title: "const", text: "Переменная, которую нельзя переназначить. Значение нельзя заменить, но объект/массив внутри можно менять.", topic: "Variables", isLearned: false },
+            { title: "let", text: "Обычная переменная, значение можно менять.", topic: "Variables", isLearned: false },
+            { title: "var", text: "Старый способ объявления переменных, не имеет блочной области видимости.", topic: "Variables", isLearned: false },
+            { title: "typeof", text: "Оператор, который возвращает тип данных (например: 'string', 'number', 'object').", topic: "Variables", isLearned: false },
+            { title: "isNaN", text: "Проверяет, является ли значение NaN (не число).", topic: "Variables", isLearned: false },
 
-            // --- LOOPS (ЦИКЛЫ) ---
-            {
-                title: "while",
-                text: "Это цикл, который выполняет код, пока условие истинно (true), если условие всегда true — цикл будет бесконечным.",
-                topic: "Loops", isUser: false
-            },
-            {
-                title: "do...while",
-                text: "do...while — это цикл, в котором тело выполняется минимум один раз, потому что проверка условия происходит после выполнения.",
-                topic: "Loops", isUser: false
-            },
-            {
-                title: "for",
-                text: "Используют, когда известно количество повторений и нужен счётчик.",
-                topic: "Loops", isUser: false
-            },
-            {
-                title: "for...of",
-                text: "Перебор ЗНАЧЕНИЙ. Создан для массивов и строк. Позволяет достать каждый элемент напрямую. Не работает с обычными объектами.",
-                topic: "Loops", isUser: false
-            },
-            {
-                title: "for...in",
-                text: "Перебор КЛЮЧЕЙ. Предназначен для объектов. Проходит по всем именам свойств объекта. В массивах использовать не рекомендуется (может тормозить и цеплять лишнее).",
-                topic: "Loops", isUser: false
-            },
+            // --- STRINGS ---
+            { title: "trim()", text: "Удаляет пробелы с начала и конца строки.", topic: "String", isLearned: false },
+            { title: "trimStart()", text: "Удаляет пробелы только в начале строки.", topic: "String", isLearned: false },
+            { title: "trimEnd()", text: "Удаляет пробелы только в конце строки.", topic: "String", isLearned: false },
+            { title: "includes()", text: "Проверяет, содержится ли подстрока в строке (true/false).", topic: "String", isLearned: false },
+            { title: "startsWith()", text: "Проверяет, начинается ли строка с указанных символов.", topic: "String", isLearned: false },
+            { title: "endsWith()", text: "Проверяет, заканчивается ли строка указанными символами.", topic: "String", isLearned: false },
+            { title: "indexOf()", text: "Ищет первое вхождение подстроки и возвращает индекс.", topic: "String", isLearned: false },
+            { title: "lastIndexOf()", text: "Ищет последнее вхождение подстроки.", topic: "String", isLearned: false },
+            { title: "padStart()", text: "Добавляет символы в начало, пока строка не достигнет нужной длины.", topic: "String", isLearned: false },
+            { title: "padEnd()", text: "Добавляет символы в конец до нужной длины.", topic: "String", isLearned: false },
+            { title: "replaceAll()", text: "Массовая замена всех совпадений в строке.", topic: "String", isLearned: false },
+            { title: "slice()", text: "Вырезает часть строки от start до end.", topic: "String", isLearned: false },
+            { title: "split()", text: "Разбивает строку на массив по разделителю.", topic: "String", isLearned: false },
+            { title: "toLowerCase()", text: "Преобразует строку в нижний регистр.", topic: "String", isLearned: false },
+            { title: "toUpperCase()", text: "Преобразует строку в верхний регистр.", topic: "String", isLearned: false },
 
-            // --- CONDITIONALS (УСЛОВИЯ) ---
-            {
-                title: "if / else",
-                text: "Базовое ветвление. 'if' проверяет истинность выражения. 'else' — запасной путь. Можно строить цепочки 'else if' для проверки нескольких условий подряд.",
-                topic: "Conditionals", isUser: false
-            },
-            {
-                title: "Ternary Operator (?:)",
-                text: "for...in — перебирает ключи (свойства) объектаТернарный оператор ?: — это короткая запись if / else, которая возвращает значение.",
-                topic: "Conditionals", isUser: false
-            },
-            {
-                title: "switch / case",
-                text: "switch / case — это альтернатива if / else, когда нужно проверить одно значение на несколько вариантов.",
-                topic: "Conditionals", isUser: false
-            },
-            // --- FUNCTIONS & CONTEXT (ПОЛНЫЙ СПИСОК) ---
-            {
-                title: "Function Declaration",
-                text: "Можно вызывать до объявления , создаётся как имя функции в области видимости.",
-                topic: "Functions", isUser: false
-            },
-            {
-                title: "Function Expression",
-                text: "Создаётся только при выполнении кода, можно присвоить переменной, но вызвать до объявления нельзя.",
-                topic: "Functions", isUser: false
-            },
-            {
-                title: "this",
-                text: "Контекст. В методе объекта указывает на сам ОБЪЕКТ. В обычной функции — на window (или undefined в strict mode). В обработчике события — на элемент, по которому кликнули.",
-                topic: "Functions", isUser: false
-            },
-            {
-                title: "call()",
-                text: "Вызывает функцию сразу, передавая this и аргументы через запятую ,Что делает: вызывает функцию с явным this и передаёт аргументы массивом.Когда используется: когда есть список аргументов в массиве и нужно вызвать функцию с конкретным контекстом.",
-                topic: "Functions", isUser: false
-            },
-            {
-                title: "apply()",
-                text: "Мгновенный вызов с подменой this. Принимает: (новыйContext, [массивАргументов]). Идентичен call, но удобен, когда аргументы уже лежат в массиве.",
-                topic: "Functions", isUser: false
-            },
-            {
-                title: "bind()",
-                text: "Что делает: возвращает новую функцию, у которой закреплён конкретный this (контекст), но не вызывает её сразу. Когда используется: когда нужно вызвать функцию позже, но с заранее закреплённым this.",
-                topic: "Functions", isUser: false
-            },
-            {
-                title: "Arrow Functions (=>)",
-                text: "(=>) — короткая запись функции, которая берёт this из внешнего контекста, не имеет arguments и обычно используется для коротких колбеков..",
-                topic: "Functions", isUser: false
-            },
-            // --- ARRAYS: CRUD & BASIC ---
-            { title: "at", text: "Возвращает элемент по индексу. Главный плюс: если передать -1, он вернет последний элемент массива, -2 — предпоследний и так далее.", topic: "Arrays", isUser: false },
-            { title: "push", text: "добавляет один или несколько элементов в конец массива и возвращает новую длину массива.", topic: "Arrays", isUser: false },
-            { title: "pop", text: "удаляет последний элемент массива и возвращает его..", topic: "Arrays", isUser: false },
-            { title: "shift", text: "удаляет первый элемент массива и возвращает его..", topic: "Arrays", isUser: false },
-            { title: "unshift", text: "добавляет один или несколько элементов в начало массива и возвращает новую длину массива...", topic: "Arrays", isUser: false },
-            { title: "concat", text: "Берет два или больше массивов и 'склеивает' их в один новый массив. Исходные массивы при этом не меняются.", topic: "Arrays", isUser: false },
-            { title: "join", text: "Превращает массив в строку. В скобках можно указать разделитель (например, запятую или тире), который будет стоять между элементами.", topic: "Arrays", isUser: false },
-            { title: "slice", text: "slice(start, end) копирует часть массива от индекса start до end (не включая end) и не изменяет исходный массив.", topic: "Arrays", isUser: false },
-            { title: "splice", text: "splice(start, deleteCount, ...items) удаляет элементы, начиная с start, и может добавить новые элементы на их место.", topic: "Arrays", isUser: false },
+            // --- ARRAYS ---
+            { title: "at", text: "Возвращает элемент по индексу (поддерживает отрицательные индексы с конца).", topic: "Arrays", isLearned: false },
+            { title: "push", text: "Добавляет элементы в конец массива.", topic: "Arrays", isLearned: false },
+            { title: "pop", text: "Удаляет последний элемент и возвращает его.", topic: "Arrays", isLearned: false },
+            { title: "shift", text: "Удаляет первый элемент и возвращает его.", topic: "Arrays", isLearned: false },
+            { title: "unshift", text: "Добавляет элементы в начало массива.", topic: "Arrays", isLearned: false },
+            { title: "concat", text: "Склеивает массивы в один новый.", topic: "Arrays", isLearned: false },
+            { title: "join", text: "Превращает массив в строку с разделителем.", topic: "Arrays", isLearned: false },
+            { title: "slice", text: "Копирует кусок массива (не меняет оригинал).", topic: "Arrays", isLearned: false },
+            { title: "splice", text: "Удаляет, заменяет или добавляет элементы (меняет оригинал).", topic: "Arrays", isLearned: false },
+            { title: "find", text: "Возвращает первый элемент, подошедший под условие.", topic: "Arrays", isLearned: false },
+            { title: "findIndex", text: "Возвращает индекс первого найденного элемента.", topic: "Arrays", isLearned: false },
+            { title: "includes", text: "Проверяет наличие элемента в массиве.", topic: "Arrays", isLearned: false },
+            { title: "some", text: "True, если хотя бы один элемент подошел.", topic: "Arrays", isLearned: false },
+            { title: "every", text: "True, если все элементы подошли под условие.", topic: "Arrays", isLearned: false },
+            { title: "isArray", text: "Единственный надежный способ проверить, массив ли это.", topic: "Arrays", isLearned: false },
+            { title: "forEach", text: "Просто перебор всех элементов (ничего не возвращает).", topic: "Arrays", isLearned: false },
+            { title: "map", text: "Создает новый массив, трансформируя каждый элемент.", topic: "Arrays", isLearned: false },
+            { title: "filter", text: "Создает новый массив только из подходящих элементов.", topic: "Arrays", isLearned: false },
+            { title: "reduce", text: "Собирает массив в одно значение (сумму, объект и т.д.).", topic: "Arrays", isLearned: false },
+            { title: "flat", text: "Разворачивает вложенные массивы.", topic: "Arrays", isLearned: false },
+            { title: "flatMap", text: "Сначала map(), потом flat(1).", topic: "Arrays", isLearned: false },
+            { title: "with", text: "Копия массива с одним замененным элементом.", topic: "Arrays", isLearned: false },
 
-            // --- ARRAYS: SEARCH & LOGIC ---
-            { title: "findIndex", text: "ищет первый элемент, который удовлетворяет условию и возвращает его индекс, или -1, если не найден..", topic: "Arrays", isUser: false },
-            { title: "find", text: "ищет первый элемент, который удовлетворяет условию в функции, и возвращает сам элемент, eсли не найден — возвращает undefined.", topic: "Arrays", isUser: false },
-            { title: "includes", text: "проверяет, есть ли элемент в массиве, и возвращает true или false.", topic: "Arrays", isUser: false },
-            { title: "indexOf", text: "ищет элемент в массиве и возвращает индекс первого вхождения, если есть, или -1, если элемента нет.", topic: "Arrays", isUser: false },
-            { title: "lastIndexOf", text: "indexOf ищет индекс первого вхождения элемента слева направо. lastIndexOf — то же самое, но начинает поиск с конца массива.", topic: "Arrays", isUser: false },
-            { title: "some", text: "вернет true, если хотя бы ОДИН элемент подошел.", topic: "Arrays", isUser: false },
-            { title: "every", text: "every вернет true только если ВСЕ элементы подошли под условие.", topic: "Arrays", isUser: false },
-            { title: "isArray", text: "Метод самого класса Array. Единственный надежный способ проверить, является ли переменная массивом (typeof выдает просто 'object').", topic: "Arrays", isUser: false },
-            { title: "forEach", text: "выполняет переданную функцию для каждого элемента массива, не возвращает значения.", topic: "Arrays", isUser: false },
+            // --- FUNCTIONS ---
+            { title: "Function Declaration", text: "Можно вызвать до объявления (всплывает).", topic: "Functions", isLearned: false },
+            { title: "Function Expression", text: "Нельзя вызвать до объявления (не всплывает).", topic: "Functions", isLearned: false },
+            { title: "this", text: "Контекст (владелец) функции в данный момент.", topic: "Functions", isLearned: false },
+            { title: "call()", text: "Вызывает функцию с явным this и аргументами через запятую.", topic: "Functions", isLearned: false },
+            { title: "apply()", text: "Вызывает функцию с явным this и аргументами массивом.", topic: "Functions", isLearned: false },
+            { title: "bind()", text: "Возвращает новую функцию с намертво привязанным this.", topic: "Functions", isLearned: false },
+            { title: "Arrow Functions (=>)", text: "Короткая запись, не имеет своего this (берет внешний).", topic: "Functions", isLearned: false },
 
-            // --- ARRAYS: TRANSFORMATION ---
-            { title: "map", text: "Создает НОВЫЙ массив, пропустив каждый элемент старого массива через функцию. Оригинал не меняется. Идеально для трансформации данных.", topic: "Arrays", isUser: false },
-            { title: "filter", text: "Создает новый массив, в который попадут только те элементы, которые прошли проверку (вернули true в функции-условии).", topic: "Arrays", isUser: false },
-            { title: "reduce", text: "Самый мощный метод. Пробегает по массиву и собирает все данные в одну переменную (аккумулятор). Можно посчитать сумму, собрать объект или строку.", topic: "Arrays", isUser: false },
-            { title: "flatMap", text: "сначала применяет map() к каждому элементу массива, а затем разворачивает результат на один уровень (то есть делает flat(1)).", topic: "Arrays", isUser: false },
-            { title: "flat", text: "разворачивает вложенные массивы на один уровень (по умолчанию) или на заданную глубину.", topic: "Arrays", isUser: false },
-            { title: "with", text: "Возвращает копию массива, где элемент на конкретном индексе заменен на новый. Не портит оригинал.", topic: "Arrays", isUser: false },
+            // --- LOOPS & CONDITIONALS ---
+            { title: "while", text: "Цикл пока условие истинно.", topic: "Loops", isLearned: false },
+            { title: "do...while", text: "Выполнится хотя бы один раз, проверка в конце.", topic: "Loops", isLearned: false },
+            { title: "for", text: "Классический цикл со счетчиком.", topic: "Loops", isLearned: false },
+            { title: "for...of", text: "Перебор значений массивов и строк.", topic: "Loops", isLearned: false },
+            { title: "for...in", text: "Перебор ключей (свойств) объекта.", topic: "Loops", isLearned: false },
+            { title: "if / else", text: "Условное ветвление.", topic: "Conditionals", isLearned: false },
+            { title: "Ternary Operator (?:)", text: "Короткий if/else, возвращающий значение.", topic: "Conditionals", isLearned: false },
+            { title: "switch / case", text: "Сравнение значения с несколькими вариантами.", topic: "Conditionals", isLearned: false },
 
-            // --- STRING: CLEANING & SPACES ---
-            {
-                title: "trim()",
-                text: "удаляет пробелы и другие пробельные символы с начала и конца строки.",
-                topic: "String", isUser: false
-            },
-            {
-                title: "trimEnd()",
-                text: "удаляет пробелы и другие пробельные символы только с конца строки.",
-                topic: "String", isUser: false
-            },
-            {
-                title: "trimStart()",
-                text: "удаляет пробелы и другие пробельные символы только с конца строки.",
-                topic: "String", isUser: false
-            },
+            // --- MATH & NUMBER ---
+            { title: "Math.ceil()", text: "Округление вверх.", topic: "Math", isLearned: false },
+            { title: "Math.floor()", text: "Округление вниз (отсекает дробь).", topic: "Math", isLearned: false },
+            { title: "Math.round()", text: "Математическое округление до ближайшего целого.", topic: "Math", isLearned: false },
+            { title: "Math.random()", text: "Случайное число от 0 до 1.", topic: "Math", isLearned: false },
+            { title: "Math.max() / Math.min()", text: "Поиск самого большого / маленького числа.", topic: "Math", isLearned: false },
+            { title: "Math.PI", text: "Число Пи (~3.14).", topic: "Math", isLearned: false },
+            { title: "toFixed()", text: "Число в строку с фикс. знаками после запятой.", topic: "Number", isLearned: false },
+            { title: "parseInt() / parseFloat()", text: "Превращают строку в целое или дробное число.", topic: "Number", isLearned: false },
+            { title: "toString()", text: "Преобразует число или объект в строку.", topic: "Number", isLearned: false },
+            { title: "toLocaleString()", text: "Красивый формат числа под страну.", topic: "Number", isLearned: false },
 
-            // --- STRING: SEARCH & CHECK ---
-            {
-                title: "includes()",
-                text: "проверяет, содержится ли указанный элемент в массиве или строке, и возвращает true или false.",
-                topic: "String", isUser: false
-            },
-            {
-                title: "startsWith()",
-                text: "проверяет, начинается ли строка с указанного значения, и возвращает true или false.",
-                topic: "String", isUser: false
-            },
-            {
-                title: "endsWith()",
-                text: "проверяет, заканчивается ли строка указанным значением, и возвращает true или false.",
-                topic: "String", isUser: false
-            },
-            {
-                title: "indexOf()",
-                text: "ищет первое вхождение элемента или подстроки и возвращает его индекс, или -1, если не найден.",
-                topic: "String", isUser: false
-            },
-            {
-                title: "lastIndexOf()",
-                text: "ищет последнее вхождение элемента или подстроки и возвращает его индекс, или -1, если не найден.",
-                topic: "String", isUser: false
-            },
+            // --- DATE ---
+            // --- DATE (ПОЛНЫЙ СПИСОК МЕТОДОВ) ---
+            { title: "new Date()", text: "Создаёт объект даты с текущим временем устройства.", topic: "Date", isLearned: false },
+            { title: "getFullYear()", text: "Возвращает год (4 цифры).", topic: "Date", isLearned: false },
+            { title: "getMonth()", text: "Возвращает месяц от 0 до 11 (0 — январь, 11 — декабрь).", topic: "Date", isLearned: false },
+            { title: "getDate()", text: "Возвращает число месяца (от 1 до 31).", topic: "Date", isLearned: false },
+            { title: "getDay()", text: "Возвращает номер дня недели (0 — воскресенье, 6 — суббота).", topic: "Date", isLearned: false },
+            { title: "getHours()", text: "Возвращает часы (0-23).", topic: "Date", isLearned: false },
+            { title: "getMinutes()", text: "Возвращает минуты (0-59).", topic: "Date", isLearned: false },
+            { title: "getSeconds()", text: "Возвращает секунды (0-59).", topic: "Date", isLearned: false },
+            { title: "getMilliseconds()", text: "Возвращает миллисекунды (0-999).", topic: "Date", isLearned: false },
+            { title: "getTime()", text: "Возвращает 'таймстамп' — количество мс, прошедших с 1 января 1970 года.", topic: "Date", isLearned: false },
 
-            // --- STRING: MODIFICATION ---
-            {
-                title: "padEnd()",
-                text: "добавляет заполнители в конец строки, чтобы её длина достигла указанного значения.",
-                topic: "String", isUser: false
-            },
-            {
-                title: "padStart()",
-                text: "добавляет заполнители в начало строки, чтобы её длина достигла указанного значения.",
-                topic: "String", isUser: false
-            },
-            {
-                title: "replaceAll()",
-                text: "Массовая замена. Находит ВСЕ совпадения в строке и меняет их на новый текст.",
-                topic: "String", isUser: false
-            },
-            {
-                title: "slice()",
-                text: "Вырезание куска. Принимает: (старт, конец). Копирует часть строки от индекса до индекса. Если передать отрицательное число, начнет отсчет с конца.",
-                topic: "String", isUser: false
-            },
-            {
-                title: "split()",
-                text: "разбивает строку на массив подстрок по указанному разделителю.",
-                topic: "String", isUser: false
-            },
-            {
-                title: "toLowerCase()",
-                text: "возвращает новую строку, где все буквы преобразованы в строчные (маленькие).",
-                topic: "String", isUser: false
-            },
-            {
-                title: "toUpperCase()",
-                text: "возвращает новую строку, где все буквы преобразованы в заглавные (большие).",
-                topic: "String", isUser: false
-            },
-            // --- MATH (КАЖДЫЙ МЕТОД ОТДЕЛЬНО) ---
-            {
-                title: "Math.ceil()",
-                text: "возвращает наименьшее целое число, которое не меньше переданного числа (округление вверх).",
-                topic: "Math", isUser: false
-            },
-            {
-                title: "Math.floor()",
-                text: "возвращает наибольшее целое число, которое не больше переданного числа (округление вниз).",
-                topic: "Math", isUser: false
-            },
-            {
-                title: "Math.round()",
-                text: "округляет число до ближайшего целого.",
-                topic: "Math", isUser: false
-            },
-            {
-                title: "Math.random()",
-                text: "возвращает случайное число с плавающей запятой в диапазоне от 0 (включительно) до 1 (не включая 1).",
-                topic: "Math", isUser: false
-            },
-            {
-                title: "Math.max()",
-                text: "возвращает наибольшее число из переданных аргументов.",
-                topic: "Math", isUser: false
-            },
-            {
-                title: "Math.min()",
-                text: "возвращает наименьшее число из переданных аргументов.",
-                topic: "Math", isUser: false
-            },
-            {
-                title: "Math.pow()",
-                text: "Возведение в степень. Принимает: (число, степень). Пример: Math.pow(2, 3) вернет 8. Альтернатива — оператор **.",
-                topic: "Math", isUser: false
-            },
-            {
-                title: "Math.PI",
-                text: "Математическая константа. Возвращает число Пи (~3.14159...). Используется для вычисления площади круга или длины окружности.",
-                topic: "Math", isUser: false
-            },
+            // Методы установки (изменения) даты
+            { title: "setFullYear(year)", text: "Устанавливает год (а также месяц и день, если передать).", topic: "Date", isLearned: false },
+            { title: "setMonth(month)", text: "Устанавливает месяц (0-11).", topic: "Date", isLearned: false },
+            { title: "setDate(date)", text: "Устанавливает число месяца. Если передать 0 — вернет последний день прошлого месяца.", topic: "Date", isLearned: false },
+            { title: "setHours(h, m, s, ms)", text: "Устанавливает время внутри объекта даты.", topic: "Date", isLearned: false },
 
-            // --- NUMBER (МЕТОДЫ ЧИСЕЛ) ---
-            {
-                title: "toFixed()",
-                text: "возвращает строку, представляющую число с указанным количеством знаков после запятой, округляя при необходимости.",
-                topic: "Number", isUser: false
-            },
-            {
-                title: "parseInt()",
-                text: "берёт строку и превращает её в целое число.",
-                topic: "Number", isUser: false
-            },
-            {
-                title: "parseFloat()",
-                text: "берёт строку и превращает её в число с плавающей запятой (десятичное число).",
-                topic: "Number", isUser: false
-            },
-            {
-                title: "Number.isNaN()",
-                text: "проверяет, является ли значение именно NaN (не число) и возвращает true или false.",
-                topic: "Number", isUser: false
-            },
-            {
-                title: "toString()",
-                text: "Число в строку, преобразует значение в строку (текст)..",
-                topic: "Number", isUser: false
-            },
-            {
-                title: "toLocaleString()",
-                text: "превращает число или дату в строку, автоматически подстраивая их под формат конкретной страны (валюта, разделители, время).",
-                topic: "Number", isUser: false
-            },
-            // --- STORAGE (ПОЛНЫЙ СПИСОК) ---
-            {
-                title: "localStorage.setItem()",
-                text: "сохраняет данные в браузере в виде пары «ключ-значение», которые остаются там даже после закрытия страницы.",
-                topic: "Storage",
-                isUser: false
-            },
-            {
-                title: "localStorage.getItem()",
-                text: "Достает сохраненные ранее данные; если по такому имени ничего нет, вернет null.",
-                topic: "Storage",
-                isUser: false
-            },
-            {
-                title: "localStorage.removeItem()",
-                text: "безвозвратно удаляет конкретную запись из памяти браузера по её имени (ключу).",
-                topic: "Storage",
-                isUser: false
-            },
-            {
-                title: "localStorage.clear()",
-                text: "Тотальная очистка. Не принимает аргументов. Удаляет абсолютно ВСЕ данные текущего сайта из хранилища браузера.",
-                topic: "Storage",
-                isUser: false
-            },
-            {
-                title: "localStorage.length",
-                text: "Свойство-счетчик. Возвращает целое число — количество всех пар 'ключ-значение', которые сейчас хранятся в памяти для твоего сайта.",
-                topic: "Storage",
-                isUser: false
-            },
-            {
-                title: "localStorage.key()",
-                text: "находит и возвращает название (имя) ключа, который лежит в памяти под определенным номером (индексом).",
-                topic: "Storage",
-                isUser: false
-            },
+            // Статические методы
+            { title: "Date.now()", text: "Быстрый способ получить текущий таймстамп без создания объекта new Date().", topic: "Date", isLearned: false },
+            { title: "Date.parse(str)", text: "Разбирает строку и возвращает количество миллисекунд (таймстамп).", topic: "Date", isLearned: false },
+            // --- STORAGE ---
+            { title: "localStorage.setItem()", text: "Сохраняет данные в браузере навсегда.", topic: "Storage", isLearned: false },
+            { title: "localStorage.getItem()", text: "Достает данные по ключу.", topic: "Storage", isLearned: false },
+            { title: "localStorage.removeItem()", text: "Удаляет одну запись.", topic: "Storage", isLearned: false },
+            { title: "localStorage.clear()", text: "Полностью очищает всё хранилище.", topic: "Storage", isLearned: false },
+            { title: "localStorage.key()", text: "Находит имя ключа по его индексу.", topic: "Storage", isLearned: false },
+
+            // --- TIMERS ---
+            { title: "setTimeout()", text: "Запуск функции один раз через паузу.", topic: "Timers", isLearned: false },
+            { title: "setInterval()", text: "Повтор функции через интервал.", topic: "Timers", isLearned: false },
+            { title: "clearTimeout / clearInterval", text: "Остановка запущенных таймеров.", topic: "Timers", isLearned: false },
+
+            // --- SYMBOL ---
+            { title: "Symbol()", text: "Создает абсолютно уникальный скрытый ключ.", topic: "Symbol", isLearned: false },
+            { title: "Symbol.for()", text: "Работает с глобальным реестром символов.", topic: "Symbol", isLearned: false },
+
             // --- OOP & ADVANCED ---
-            { title: "Наследование (extends)", text: "Позволяет одному классу забрать все методы и свойства другого (родительского) класса, чтобы не писать код дважды.", topic: "OOP", isUser: false },
-            { title: "Инкапсуляция (#)", text: "Скрытие данных. Используя решетку # перед именем свойства в классе, мы делаем его приватным — его нельзя будет прочитать или изменить вне класса.", topic: "OOP", isUser: false },
-            { title: "Полиморфизм", text: "Способность программы использовать объекты с разной структурой через один и тот же интерфейс. Разные классы — одинаковые имена методов.", topic: "OOP", isUser: false },
-            { title: "Абстракция", text: "Упрощение. Мы выделяем только важные свойства объекта для нашей задачи, отсекая лишние детали реализации.", topic: "OOP", isUser: false },
-            { title: "Замыкание", text: "Ситуация, когда функция 'помнит' переменные из того места, где она была создана, даже если та область видимости уже закрылась.", topic: "Advanced", isUser: false },
-            { title: "Rest & Spread (...)", text: "Spread разворачивает массив в список элементов. Rest наоборот — собирает отдельные элементы в один массив.", topic: "Advanced", isUser: false }
-        ];;
+            { title: "Наследование (extends)", text: "Один класс забирает методы другого.", topic: "OOP", isLearned: false },
+            { title: "Инкапсуляция (#)", text: "Приватные свойства класса через решетку.", topic: "OOP", isLearned: false },
+            { title: "Полиморфизм", text: "Одинаковые имена методов делают разное в разных классах.", topic: "OOP", isLearned: false },
+            { title: "Абстракция", text: "Выделение только важных деталей объекта.", topic: "OOP", isLearned: false },
+            { title: "Замыкание", text: "Функция помнит переменные из места своего создания.", topic: "Advanced", isLearned: false },
+            { title: "Rest & Spread (...)", text: "Разворачивание или сборка массивов/объектов.", topic: "Advanced", isLearned: false }
+        ];
 
-        // Инициализация поля isLearned
-        savedCards.forEach(c => { if (c.isLearned === undefined) c.isLearned = false; });
+        let cardsData = JSON.parse(localStorage.getItem('js_cards_progress')) || initialCards;
 
-        function saveCards() { localStorage.setItem('savedCards', JSON.stringify(savedCards)); }
+        function saveToStorage() {
+            localStorage.setItem('js_cards_progress', JSON.stringify(cardsData));
+        }
 
-        function addCardToDOM(card, index) {
+        function addCardToDOM(card) {
             const cardDiv = document.createElement('div');
-            cardDiv.className = "bg-zinc-900 border border-zinc-700 rounded-xl p-8 relative hover:border-yellow-500/50 transition duration-300 shadow-lg";
+            const learnedClass = card.isLearned ? 'border-gray-500/50  duration-300 shadow-lg border-zinc-700 bg-zinc-900 hover:border-yellow-500/50' : 'border-zinc-700 bg-zinc-900 hover:border-yellow-500/50';
+
+            cardDiv.className = `p-8 rounded-xl border relative transition duration-300 shadow-lg ${learnedClass}`;
             cardDiv.innerHTML = `
                 <span class="text-yellow-500 text-[10px] font-bold uppercase tracking-widest mb-2 block">${card.topic}</span>
                 <h5 class="text-white text-xl font-semibold mb-3">${card.title}</h5>
                 <p class="text-gray-400 text-sm leading-relaxed mb-4">${card.text}</p>
             `;
 
-            // Кнопка "Выучил"
             const learnBtn = document.createElement('button');
-            learnBtn.innerHTML = card.isLearned ? '✓' : '✘ ';
-            learnBtn.className = "absolute top-3 right-3 text-gray-500 font-bold hover:scale-110 transition cursor-pointer border rounded-lg p-1";
-            learnBtn.addEventListener('click', () => {
-                card.isLearned = !card.isLearned;
-                learnBtn.innerHTML = card.isLearned ? '✓ ' : '✘ ';
-                saveCards();
-            });
-            cardDiv.appendChild(learnBtn);
+            learnBtn.innerHTML = card.isLearned ? '✓' : '✘';
+            learnBtn.className = `absolute top-3 right-3 font-bold hover:scale-110 transition cursor-pointer border rounded-lg w-8 h-8 flex items-center justify-center ${card.isLearned ? 'bg-green-600 border-green-400 text-white' : 'bg-zinc-800 border-zinc-600 text-gray-500'}`;
 
+            learnBtn.onclick = () => {
+                card.isLearned = !card.isLearned;
+                saveToStorage();
+                renderCards();
+            };
+
+            cardDiv.appendChild(learnBtn);
             container.appendChild(cardDiv);
         }
 
         function renderTopics() {
             menu.innerHTML = '';
-            const allBtn = document.createElement('button');
-            allBtn.innerText = "All Topics";
-            allBtn.className = `px-5 py-2 rounded-full text-xs font-bold transition flex-shrink-0 cursor-pointer ${currentFilter === 'All' ? 'active-topic' : 'bg-zinc-700 text-white hover:bg-zinc-600'}`;
-            allBtn.onclick = () => { currentFilter = 'All'; renderAll(); };
-            menu.appendChild(allBtn);
+            const topics = ['All', ...new Set(cardsData.map(c => c.topic))];
 
-            const topics = [...new Set(savedCards.map(c => c.topic))];
             topics.forEach(topic => {
                 const btn = document.createElement('button');
-                btn.innerText = topic;
+                btn.innerText = topic === 'All' ? "Все темы" : topic;
                 btn.className = `px-5 py-2 rounded-full text-xs font-bold transition flex-shrink-0 cursor-pointer ${currentFilter === topic ? 'active-topic' : 'bg-zinc-700 text-white hover:bg-zinc-600'}`;
-                btn.onclick = () => { currentFilter = topic; renderAll(); };
+                btn.onclick = () => {
+                    currentFilter = topic;
+                    renderAll();
+                };
                 menu.appendChild(btn);
             });
         }
 
         function renderCards() {
             container.innerHTML = '';
-            const filtered = currentFilter === 'All' ? savedCards : savedCards.filter(c => c.topic === currentFilter);
-            filtered.forEach((c) => addCardToDOM(c, savedCards.indexOf(c)));
+            const query = searchInput.value.toLowerCase().trim();
+
+            const filtered = cardsData.filter(card => {
+                const matchesTopic = currentFilter === 'All' || card.topic === currentFilter;
+                const matchesSearch = card.title.toLowerCase().includes(query) ||
+                    card.text.toLowerCase().includes(query);
+                return matchesTopic && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-10 text-zinc-500 italic text-lg font-light">Ничего не найдено... 🔍</div>`;
+            } else {
+                filtered.forEach(card => addCardToDOM(card));
+            }
         }
 
-        function renderAll() { renderTopics(); renderCards(); }
+        searchInput.addEventListener('input', renderCards);
 
-        btn.addEventListener('click', () => {
-            const title = titleInput.value.trim();
-            const text = textInput.value.trim();
-            const topic = topicInput.value.trim();
-            if (!title || !text || !topic) { alert("Заполни все поля!"); return; }
+        function renderAll() {
+            renderTopics();
+            renderCards();
+        }
 
-            savedCards.push({ title, text, topic, isUser: true, isLearned: false });
-            saveCards();
-            currentFilter = topic;
-            renderAll();
-
-            titleInput.value = ''; textInput.value = ''; topicInput.value = '';
-        });
 
         renderAll();
     </script>
-</body>
 
+</body>
 </html>
